@@ -6,8 +6,12 @@ configuration Railway needs.
 
 Instructure publishes no current application image (the `instructure/canvas-lms`
 Docker Hub tags were last pushed in 2019), so the `Dockerfile` here follows
-upstream's own `Dockerfile.production` recipe and clones the app from the `prod`
-branch — Instructure's pointer at the release running in their production estate.
+upstream's own `Dockerfile.production` recipe and clones the app at a release tag.
+
+The tag is pinned rather than tracking the `prod` branch: `prod` ships a
+`ui/features/discovery_page` that imports `@instructure/platform-alerts` while its
+root `package.json` never declares that package, so a clean checkout cannot resolve
+it and the asset build fails. The release tag declares the dependency.
 
 ## What this repository adds
 
