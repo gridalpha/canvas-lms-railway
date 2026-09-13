@@ -21,6 +21,7 @@ it and the asset build fails. The release tag declares the dependency.
 | `config/environments/production-local.rb` | Canvas hardcodes `public_file_server.enabled = false` (it expects nginx in front) and `force_ssl` without `assume_ssl`. `production.rb` ends by `eval`ing `production-*.rb`, which is the supported hook for both, plus Railway's proxy ranges for `request.remote_ip`. |
 | `railway/puma.rb` | Canvas' own `config/puma.rb` is `threads 0, 1` with no workers — one request at a time. Concurrency comes from `WEB_CONCURRENCY` worker processes instead, because a Railway host reports 48 cores against an 8 GB container quota. |
 | `railway/entrypoint.sh` | Waits for Postgres, runs `db:initial_setup` on an empty database (which seeds the first admin from environment variables *before* any listener opens) or `db:migrate` on an existing one, generates the default theme, then starts the selected role. |
+| `railway/render_security_yml.rb` | `db:generate_security_key`, which `db:initial_setup` depends on, reads `config/security.yml` with a bare `YAML.load_file` — no ERB — so that one file is written as plain YAML at boot instead of shipped as a template. |
 | `railway/jobs_health.rb` | The `delayed_jobs` role serves no HTTP, so this gives Railway a real probe: the pool process is its parent, and it caches a Postgres reachability check. |
 
 ## Roles

@@ -87,21 +87,6 @@ RUN git clone --depth 1 --single-branch --branch "$CANVAS_REF" \
   && rm -rf /tmp/canvas \
   && chown -R docker:docker "$APP_HOME"
 
-# Railway configuration: every file here is ERB and reads its values from the
-# container environment, so one image serves any deployment.
-COPY --chown=docker:docker config/ $APP_HOME/config/
-COPY --chown=docker:docker railway/ $APP_HOME/railway/
-
-# Canvas writes its Rails log to log/<env>.log; Railway reads stdout.
-RUN ln -sf /dev/stdout "$APP_HOME/log/production.log" \
-  && ln -sf /dev/stdout "$APP_HOME/log/delayed_job.log" \
-  && chmod +x "$APP_HOME/railway/entrypoint.sh" \
-  && bash -n "$APP_HOME/railway/entrypoint.sh" \
-  && ruby -c "$APP_HOME/railway/jobs_health.rb" \
-  && ruby -c "$APP_HOME/railway/puma.rb" \
-  && ruby -c "$APP_HOME/config/environments/production-local.rb" \
-  && command -v psql && command -v pg_isready
-
 USER docker
 
 RUN mkdir -p tmp/files log public/dist
@@ -131,6 +116,23 @@ RUN (yarn install --frozen-lockfile || yarn install --frozen-lockfile --network-
 
 # Fail the build rather than the container if a compiled bundle is missing.
 RUN test -d public/dist/webpack-production && ls public/dist/webpack-production | head -5
+
+# Railway configuration, copied after the asset build so a config change rebuilds in
+# seconds instead of recompiling every bundle. Nothing here is read by the asset
+# build: canvas:compile_assets never loads the Rails environment.
+COPY --chown=docker:docker config/ $APP_HOME/config/
+COPY --chown=docker:docker railway/ $APP_HOME/railway/
+
+# Canvas writes its Rails log to log/<env>.log; Railway reads stdout.
+RUN ln -sf /dev/stdout "$APP_HOME/log/production.log" \
+  && ln -sf /dev/stdout "$APP_HOME/log/delayed_job.log" \
+  && chmod +x "$APP_HOME/railway/entrypoint.sh" \
+  && bash -n "$APP_HOME/railway/entrypoint.sh" \
+  && ruby -c "$APP_HOME/railway/jobs_health.rb" \
+  && ruby -c "$APP_HOME/railway/puma.rb" \
+  && ruby -c "$APP_HOME/railway/render_security_yml.rb" \
+  && ruby -c "$APP_HOME/config/environments/production-local.rb" \
+  && command -v psql && command -v pg_isready
 
 ENV CANVAS_ROLE=web
 CMD ["/usr/src/app/railway/entrypoint.sh"]

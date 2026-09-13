@@ -27,6 +27,9 @@ fi
 
 export PGPASSWORD="${CANVAS_DB_PASSWORD:-}"
 
+# security.yml has to be real YAML rather than ERB — see render_security_yml.rb.
+ruby railway/render_security_yml.rb
+
 wait_for_db() {
   local i
   for i in $(seq 1 90); do
