@@ -53,7 +53,8 @@ Both are built from this one image.
 | `CANVAS_LMS_STATS_COLLECTION` | `opt_out` | `opt_in`, `anonymized` or `opt_out`. |
 | `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | unset | Object storage for uploaded files. With `S3_BUCKET` unset the file store falls back to `local`, which is ephemeral on Railway and not shareable with the jobs role. Path-style addressing is forced. |
 | `WEB_CONCURRENCY` | `2` | Puma worker processes. Each costs roughly 700 MB. |
-| `CANVAS_JOB_WORKERS`, `CANVAS_JOB_WORKERS_HIGH` | `2`, `1` | delayed_job pool sizes. |
+| `CANVAS_JOB_WORKERS`, `CANVAS_JOB_WORKERS_HIGH` | `1`, `1` | delayed_job pool sizes. Each worker is a fork of the whole eager-loaded application, roughly 1.2 GB resident. |
+| `CANVAS_JOB_WORKER_MAX_MEMORY` | `2147483648` | Recycle a worker above this RSS. Must stay well above the ~1.2 GB baseline or every worker is recycled after its first job. |
 | `CANVAS_SMTP_ADDRESS`, `CANVAS_SMTP_PORT`, `CANVAS_SMTP_USER_NAME`, `CANVAS_SMTP_PASSWORD`, `CANVAS_SMTP_AUTHENTICATION`, `CANVAS_SMTP_OUTGOING_ADDRESS`, `CANVAS_SMTP_DEFAULT_NAME` | unset | With no `CANVAS_SMTP_ADDRESS`, mail is accepted and discarded rather than retried against a host that does not exist. |
 | `CANVAS_LOG_LEVEL` | `info` | |
 | `CANVAS_DB_POOL` | `5` | ActiveRecord pool per Puma worker. |

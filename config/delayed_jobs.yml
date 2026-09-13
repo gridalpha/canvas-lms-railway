@@ -1,12 +1,20 @@
+# Worker counts are deliberately small. Each delayed_job worker is a fork of the
+# whole eager-loaded Canvas application — roughly 1.2 GB resident — so three of them
+# plus the pool parent exhausts an 8 GB container and the children die in
+# `Delayed::Pool#fork_with_reconnects` with NoMemoryError.
+#
+# worker_max_memory_usage must stay comfortably above that baseline for the same
+# reason: set below it, every worker is recycled after its first job and the pool
+# forks continuously.
 production:
   workers:
     - queue: canvas_queue
       workers: <%= ENV.fetch("CANVAS_JOB_WORKERS_HIGH", "1") %>
       max_priority: 10
     - queue: canvas_queue
-      workers: <%= ENV.fetch("CANVAS_JOB_WORKERS", "2") %>
-  worker_max_job_count: 200
-  worker_max_memory_usage: 1073741824
+      workers: <%= ENV.fetch("CANVAS_JOB_WORKERS", "1") %>
+  worker_max_job_count: 100
+  worker_max_memory_usage: <%= ENV.fetch("CANVAS_JOB_WORKER_MAX_MEMORY", "2147483648") %>
 
 default:
   workers:

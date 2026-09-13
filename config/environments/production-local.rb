@@ -29,3 +29,12 @@ config.action_dispatch.trusted_proxies = ActionDispatch::RemoteIp::TRUSTED_PROXI
   IPAddr.new("152.233.0.0/17"),
   IPAddr.new("fd00::/8")
 ]
+
+# Canvas builds its logger in the Application class body, before this file is
+# evaluated, and reads `config.log_level` there — which is still Rails' own default
+# of :debug at that point, so `log_level:` in config/logging.yml never takes effect
+# and every SQL statement is logged. On the jobs tier that is thousands of lines a
+# minute, past Railway's 500 logs/sec per-replica cap, which drops the lines that
+# matter. Set the level on the already-built logger.
+config.log_level = ENV.fetch("CANVAS_LOG_LEVEL", "info").to_sym
+config.logger.level = Logger.const_get(config.log_level.to_s.upcase) if config.logger
