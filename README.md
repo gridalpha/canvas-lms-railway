@@ -57,7 +57,7 @@ Both are built from this one image.
 
 | Argument | Default | Notes |
 |---|---|---|
-| `CANVAS_REF` | `prod` | Upstream branch or tag to build. |
+| `CANVAS_REF` | `release/2026-05-20.143` | Upstream branch or tag to build. |
 | `CANVAS_ALL_LOCALES` | `0` | `1` compiles all ~30 UI locales. It roughly doubles the webpack stage, which already dominates the build. |
 
 ## Licence

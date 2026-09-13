@@ -8,9 +8,14 @@
 ARG RUBY=3.4
 FROM instructure/ruby-passenger:3.4-jammy
 
-# Which upstream ref to build. `prod` is Instructure's pointer at the release
-# currently running in their production estate, so it floats with each release.
-ARG CANVAS_REF=prod
+# Which upstream ref to build.
+#
+# Pinned rather than floating: the `prod` branch — Instructure's pointer at the
+# release running in their own estate — carries a `ui/features/discovery_page` that
+# imports `@instructure/platform-alerts`, and its root `package.json` never declares
+# that package, so a clean checkout cannot resolve it and the webpack stage fails.
+# The newest release tag declares the dependency and does not ship that feature.
+ARG CANVAS_REF=release/2026-05-20.143
 
 # Build all ~30 UI locales (1) or English only (0). All-locales roughly doubles the
 # webpack stage; English-only keeps a first build inside a sane window. Change this
@@ -104,6 +109,17 @@ RUN mkdir -p tmp/files log public/dist
 ENV COMPILE_ASSETS_BRAND_CONFIGS=0
 ENV COMPILE_ASSETS_NPM_INSTALL=0
 ENV COMPILE_ASSETS_API_DOCS=0
+
+# Canvas' asset build fans out with Parallel.processor_count, which reads the host's
+# 48 cores rather than the container's quota.
+ENV CANVAS_BUILD_CONCURRENCY=4
+# In production mode Canvas also builds an unminified development bundle purely as a
+# ?optimized_js=0 fallback. Skipping it, and sourcemaps with it, halves the webpack
+# stage and ships nothing the deployment serves.
+ENV JS_BUILD_NO_FALLBACK=1
+ENV SKIP_SOURCEMAPS=1
+# Do not fail the whole build on a webpack warning.
+ENV WEBPACK_PEDANTIC=0
 
 RUN unset RUBY && bundle config --global build.nokogiri --use-system-libraries && \
   bundle config --global build.ffi --enable-system-libffi && \
