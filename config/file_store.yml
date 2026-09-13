@@ -1,0 +1,7 @@
+<%
+  storage = ENV["CANVAS_FILE_STORAGE"].to_s
+  storage = ENV["S3_BUCKET"].to_s.empty? ? "local" : "s3" if storage.empty?
+%>
+production:
+  storage: <%= storage %>
+  path_prefix: tmp/files

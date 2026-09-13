@@ -1,0 +1,18 @@
+<%
+  require "json"
+  def cfg(key, default = "")
+    v = ENV[key]
+    (v.nil? || v.empty? ? default : v).to_json
+  end
+%>
+production:
+  adapter: postgresql
+  encoding: utf8
+  host: <%= cfg("CANVAS_DB_HOST", "postgres.railway.internal") %>
+  port: <%= cfg("CANVAS_DB_PORT", "5432") %>
+  database: <%= cfg("CANVAS_DB_DATABASE", "railway") %>
+  username: <%= cfg("CANVAS_DB_USERNAME", "postgres") %>
+  password: <%= cfg("CANVAS_DB_PASSWORD") %>
+  pool: <%= cfg("CANVAS_DB_POOL", "5") %>
+  timeout: 5000
+  prepared_statements: false

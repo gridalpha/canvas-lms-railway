@@ -1,0 +1,3 @@
+production:
+  logger: rails
+  log_level: <%= ENV.fetch("CANVAS_LOG_LEVEL", "info") %>

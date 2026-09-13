@@ -1,0 +1,9 @@
+<%
+  require "json"
+  domain = ENV["CANVAS_DOMAIN"].to_s
+  domain = ENV["RAILWAY_PUBLIC_DOMAIN"].to_s if domain.empty?
+  domain = "localhost:3000" if domain.empty?
+%>
+production:
+  domain: <%= domain.to_json %>
+  ssl: <%= ENV.fetch("CANVAS_SSL", "true") %>

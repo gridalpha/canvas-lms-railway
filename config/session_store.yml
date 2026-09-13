@@ -1,0 +1,4 @@
+production:
+  session_store: encrypted_cookie_store
+  expire_after: <%= ENV.fetch("CANVAS_SESSION_EXPIRE_AFTER", "86400") %>
+  secure: <%= ENV.fetch("CANVAS_SSL", "true") %>

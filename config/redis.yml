@@ -1,0 +1,12 @@
+<%
+  require "json"
+  redis_url = ENV["CANVAS_REDIS_URL"].to_s
+  redis_url = "redis://redis.railway.internal:6379" if redis_url.empty?
+%>
+production:
+  url:
+    - <%= redis_url.to_json %>
+  connect_timeout: 5
+  circuit_breaker:
+    error_threshold: 5
+    error_timeout: 10

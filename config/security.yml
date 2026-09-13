@@ -1,0 +1,18 @@
+<%
+  require "json"
+  key = ENV["CANVAS_ENCRYPTION_KEY"].to_s
+  jwt = ENV["CANVAS_JWT_ENCRYPTION_KEY"].to_s
+  jwt = key if jwt.empty?
+  previous = ENV["CANVAS_PREVIOUS_ENCRYPTION_KEYS"].to_s.split(",").map(&:strip).reject(&:empty?)
+%>
+production:
+  encryption_key: <%= key.to_json %>
+  jwt_encryption_keys:
+    - <%= jwt.to_json %>
+<% unless previous.empty? %>
+  previous_encryption_keys:
+<% previous.each do |p| %>
+    - <%= p.to_json %>
+<% end %>
+<% end %>
+  lti_iss: <%= "https://#{ENV['CANVAS_DOMAIN'].to_s.empty? ? ENV['RAILWAY_PUBLIC_DOMAIN'] : ENV['CANVAS_DOMAIN']}".to_json %>

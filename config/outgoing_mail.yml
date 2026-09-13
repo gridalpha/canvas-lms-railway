@@ -1,0 +1,26 @@
+<%
+  require "json"
+  address = ENV["CANVAS_SMTP_ADDRESS"].to_s
+  domain  = ENV["CANVAS_DOMAIN"].to_s
+  domain  = ENV["RAILWAY_PUBLIC_DOMAIN"].to_s if domain.empty?
+  from    = ENV["CANVAS_SMTP_OUTGOING_ADDRESS"].to_s
+  from    = "canvas@#{domain.split(':').first}" if from.empty?
+%>
+<% if address.empty? %>
+# No SMTP relay configured: mail is accepted and discarded rather than retried
+# against a host that does not exist. Set CANVAS_SMTP_ADDRESS to enable delivery.
+production:
+  delivery_method: "test"
+  outgoing_address: <%= from.to_json %>
+  default_name: <%= ENV.fetch("CANVAS_SMTP_DEFAULT_NAME", "Canvas").to_json %>
+<% else %>
+production:
+  address: <%= address.to_json %>
+  port: <%= ENV.fetch("CANVAS_SMTP_PORT", "587").to_json %>
+  user_name: <%= ENV["CANVAS_SMTP_USER_NAME"].to_s.to_json %>
+  password: <%= ENV["CANVAS_SMTP_PASSWORD"].to_s.to_json %>
+  authentication: <%= ENV.fetch("CANVAS_SMTP_AUTHENTICATION", "plain").to_json %>
+  domain: <%= domain.split(":").first.to_json %>
+  outgoing_address: <%= from.to_json %>
+  default_name: <%= ENV.fetch("CANVAS_SMTP_DEFAULT_NAME", "Canvas").to_json %>
+<% end %>
